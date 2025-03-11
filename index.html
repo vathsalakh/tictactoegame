@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Tic-Tac-Toe by Vathsala 1 my new game</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #34495e;
+        }
+        .navbar h1 {
+            margin: 0;
+        }
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links li {
+            display: inline;
+        }
+        .nav-links a {
+            color: #ecf0f1;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+        .nav-links a:hover {
+            background-color: #e74c3c;
+            border-radius: 5px;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, auto);
+            gap: 5px;
+            margin: 20px auto;
+            width: 270px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            border: 2px solid #ecf0f1;
+            padding: 4px;
+            background-color: #34495e;
+            border-radius: 8px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #bdc3c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border-radius: 4px;
+        }
+        .cell.taken {
+            cursor: not-allowed;
+            color: black;
+        }
+        .won {
+            background-color: #27ae60;
+        }
+        .highlight {
+            border: 3px solid #e74c3c;
+        }
+        #restart {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        #restart:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Ultimate Tic-Tac-Toe by Vathsala</h1>
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Info</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Projects</a></li>
+        </ul>
+    </div>
+    <p id="status">Player X's turn</p>
+    <button id="restart">Restart Game</button>
+    <div class="game-container" id="game-board"></div>
+    <script>
+        const gameBoard = document.getElementById("game-board");
+        const statusText = document.getElementById("status");
+        const restartButton = document.getElementById("restart");
+        let currentPlayer = "X";
+        let bigBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+        let activeBoard = -1;
+
+        for (let i = 0; i < 9; i++) {
+            const smallBoard = document.createElement("div");
+            smallBoard.classList.add("board");
+            smallBoard.dataset.index = i;
+
+            for (let j = 0; j < 9; j++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.dataset.index = j;
+                cell.addEventListener("click", () => handleMove(i, j));
+                smallBoard.appendChild(cell);
+            }
+
+            gameBoard.appendChild(smallBoard);
+        }
+
+        function handleMove(boardIndex, cellIndex) {
+            if (activeBoard !== -1 && activeBoard !== boardIndex) return;
+            if (bigBoard[boardIndex][cellIndex] !== null) return;
+
+            bigBoard[boardIndex][cellIndex] = currentPlayer;
+            const board = document.getElementsByClassName("board")[boardIndex];
+            const cell = board.children[cellIndex];
+            cell.textContent = currentPlayer;
+            cell.classList.add("taken");
+
+            if (checkWin(bigBoard[boardIndex])) {
+                board.classList.add("won");
+                bigBoard[boardIndex] = currentPlayer;
+            }
+
+            if (checkWin(bigBoard.map(b => (typeof b === "string" ? b : null)))) {
+                statusText.textContent = `Player ${currentPlayer} Wins the Game!`;
+                document.querySelectorAll(".cell").forEach(cell => cell.classList.add("taken"));
+                return;
+            }
+
+            activeBoard = bigBoard[cellIndex].some(c => c === null) ? cellIndex : -1;
+            updateHighlight();
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            statusText.textContent = `Player ${currentPlayer}'s turn`;
+        }
+
+        function checkWin(board) {
+            const wins = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            return wins.some(combination => 
+                combination.every(index => board[index] === currentPlayer)
+            );
+        }
+
+        function updateHighlight() {
+            document.querySelectorAll(".board").forEach(board => board.classList.remove("highlight"));
+            if (activeBoard !== -1) {
+                document.getElementsByClassName("board")[activeBoard].classList.add("highlight");
+            }
+        }
+
+        restartButton.addEventListener("click", () => {
+            bigBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+            activeBoard = -1;
+            currentPlayer = "X";
+            statusText.textContent = "Player X's turn";
+            document.querySelectorAll(".cell").forEach(cell => {
+                cell.textContent = "";
+                cell.classList.remove("taken");
+            });
+            document.querySelectorAll(".board").forEach(board => board.classList.remove("won", "highlight"));
+        });
+    </script>
+</body>
+</html>
